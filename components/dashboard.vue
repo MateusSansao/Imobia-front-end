@@ -71,45 +71,69 @@ const opcoesPie = computed(() => {
   };
 });
 
-const total = ref(0);
+const full = ref(0);
+const fullAvailable = ref(0);
+const valueAverage = ref(0);
+const cidadeMaisBarata = ref("");
+const cidadeMaisImoveis = ref("");
+
+const { data } = await useFetch(
+  "https://apicontrole.useimobia.com.br/api/desafio-imobia/imoveis"
+);
 
 onMounted(async () => {
-  console.log("Dashboard de Imóveis montado");
-
-  const { data } = await useFetch(
-    "https://apicontrole.useimobia.com.br/api/desafio-imobia/imoveis"
-  );
+  console.log("dashboard");
 
   if (data.value) {
-    total.value = data.value.length;
+    full.value = data.value.length;
   }
 
-  console.log(data.value[0].nome);
+  if (data.value) {
+    fullAvailable.value = data.value.filter(
+      (imovel) => imovel.situacao === "disponivel"
+    ).length;
+  }
+
+  if (data.value) {
+    const alugueis = data.value.filter((imovel) => imovel.valor_aluguel);
+    const soma = alugueis.reduce(
+      (total, imovel) => total + Number(imovel.valor_aluguel),
+      0
+    );
+
+    valueAverage.value = alugueis.length > 0 ? soma / alugueis.length : 0;
+  }
+
+  if (data.value) {
+    const alugueis = data.value.filter((imovel) => imovel.valor_aluguel);
+
+    if (alugueis.length > 0) {
+      const imovelMaisBarato = alugueis.reduce((maisBarato, atual) => {
+        return Number(atual.valor_aluguel) < Number(maisBarato.valor_aluguel)
+          ? atual
+          : maisBarato;
+      });
+
+      cidadeMaisBarata.value = imovelMaisBarato.cidade;
+    }
+  }
+
+  if (data.value) {
+    const counts = {};
+
+    for (const imovel of data.value) {
+      counts[imovel.cidade] = (counts[imovel.cidade] || 0) + 1;
+    }
+
+    cidadeMaisImoveis.value = Object.entries(counts).reduce((a, b) =>
+      a[1] > b[1] ? a : b
+    )[0];
+  }
 });
 </script>
 
 <template>
   <div class="container">
-    <div class="session-filter">
-      <div class="card-filter">
-        <label class="label-filter">Tipo de imóvel</label>
-        <select class="input-filter">
-          <option>Casa</option>
-        </select>
-      </div>
-      <div class="card-filter">
-        <label class="label-filter">Estado</label>
-        <select class="input-filter">
-          <option>Estado</option>
-        </select>
-      </div>
-      <div class="card-filter">
-        <label class="label-filter">Cidade</label>
-        <select class="input-filter">
-          <option>Cidade</option>
-        </select>
-      </div>
-    </div>
     <div class="row-graphic">
       <div class="session-02">
         <div class="container-cards">
@@ -119,7 +143,7 @@ onMounted(async () => {
             </div>
             <div>
               <h1 class="info-card-h1">Total de imóveis</h1>
-              <P class="info-card-p">{{ total }}</P>
+              <p class="info-card-p">{{ full }}</p>
             </div>
           </div>
           <div class="card">
@@ -131,7 +155,7 @@ onMounted(async () => {
             </div>
             <div>
               <h1 class="info-card-h1">Total de imóveis Disponiveis</h1>
-              <P class="info-card-p">15</P>
+              <p class="info-card-p">{{ fullAvailable }}</p>
             </div>
           </div>
           <div class="card">
@@ -143,7 +167,7 @@ onMounted(async () => {
             </div>
             <div>
               <h1 class="info-card-h1">Preço médio</h1>
-              <P class="info-card-p">R$ 480.00</P>
+              <p class="info-card-p">R${{ valueAverage.toFixed(2) }}</p>
             </div>
           </div>
         </div>
@@ -156,8 +180,8 @@ onMounted(async () => {
               />
             </div>
             <div>
-              <h1 class="info-card-h1">Tipo mais comun</h1>
-              <P class="info-card-p">CASA</P>
+              <h1 class="info-card-h1">Cidade com menor preço</h1>
+              <p class="info-card-p">{{ cidadeMaisBarata }}</p>
             </div>
           </div>
           <div class="card">
@@ -166,7 +190,7 @@ onMounted(async () => {
             </div>
             <div>
               <h1 class="info-card-h1">Cidade com mais imóvel</h1>
-              <P class="info-card-p">Brusque</P>
+              <p class="info-card-p">{{ cidadeMaisImoveis }}</p>
             </div>
           </div>
         </div>

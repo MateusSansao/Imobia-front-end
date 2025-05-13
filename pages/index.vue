@@ -38,7 +38,7 @@
 .dashboard {
   display: flex;
   justify-content: center;
-  align-items: start;
+  align-items: center;
   width: 100%;
   height: 100%;
   background-color: #1d1d1d;
