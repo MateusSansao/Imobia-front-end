@@ -228,6 +228,10 @@ const imoveisFiltrados = computed(() => {
                       imovel.valor_aluguel
                         ? imovel.valor_aluguel.toFixed(2)
                         : "-"
+                    }}<br />
+                    <strong>IPTU:</strong
+                    >{{
+                      imovel.valor_iptu ? imovel.valor_iptu.toFixed(2) : "-"
                     }}
                   </v-card-text>
                 </div>

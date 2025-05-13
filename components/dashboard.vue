@@ -15,17 +15,26 @@ library.add(faHome, faDollarSign, faBookmark, faCity);
 
 ChartJS.register(Title, Tooltip, Legend, ArcElement);
 
+const full = ref(0);
+const fullAvailable = ref(0);
+const valueAverage = ref(0);
+const cidadeMaisBarata = ref("");
+const cidadeMaisImoveis = ref("");
+
+const { data } = await useFetch(
+  "https://apicontrole.useimobia.com.br/api/desafio-imobia/imoveis"
+);
+
 const dadosImoveis = ref({
   porTipo: [
     { tipo: "Apartamento", quantidade: 0 },
     { tipo: "Casa", quantidade: 0 },
-    { tipo: "Cobertura", quantidade: 0 },
-    { tipo: "Kitnet", quantidade: 0 },
+    { tipo: "Chácara", quantidade: 0 },
+    { tipo: "Sobrado", quantidade: 0 },
     { tipo: "Terreno", quantidade: 0 },
   ],
 });
 
-// Definição de dados iniciais para o gráfico
 const dadosPorTipoInit = {
   labels: [],
   datasets: [
@@ -36,14 +45,22 @@ const dadosPorTipoInit = {
   ],
 };
 
-// Computed properties
 const dadosPorTipo = computed(() => {
-  if (!dadosImoveis || !dadosImoveis.porTipo || !dadosImoveis.porTipo.length) {
+  if (!data.value || !Array.isArray(data.value)) {
     return dadosPorTipoInit;
   }
 
+  const counts = {};
+  data.value.forEach((imovel) => {
+    const tipo = (imovel.tipo_imovel || "Outro").trim();
+    counts[tipo] = (counts[tipo] || 0) + 1;
+  });
+
+  const labels = Object.keys(counts);
+  const values = Object.values(counts);
+
   return {
-    labels: dadosImoveis.porTipo.map((item) => item.tipo),
+    labels,
     datasets: [
       {
         backgroundColor: [
@@ -52,34 +69,16 @@ const dadosPorTipo = computed(() => {
           "#ffcc00",
           "#ff6384",
           "#9966ff",
+          "#00b894",
+          "#fdcb6e",
+          "#e17055",
+          "#6c5ce7",
         ],
-        data: dadosImoveis.porTipo.map((item) => item.quantidade),
+        data: values,
       },
     ],
   };
 });
-
-const opcoesPie = computed(() => {
-  return {
-    responsive: true,
-    maintainAspectRatio: true,
-    plugins: {
-      legend: {
-        position: "right",
-      },
-    },
-  };
-});
-
-const full = ref(0);
-const fullAvailable = ref(0);
-const valueAverage = ref(0);
-const cidadeMaisBarata = ref("");
-const cidadeMaisImoveis = ref("");
-
-const { data } = await useFetch(
-  "https://apicontrole.useimobia.com.br/api/desafio-imobia/imoveis"
-);
 
 onMounted(async () => {
   console.log("dashboard");
@@ -92,6 +91,20 @@ onMounted(async () => {
     fullAvailable.value = data.value.filter(
       (imovel) => imovel.situacao === "disponivel"
     ).length;
+  }
+
+  if (data.value) {
+    dadosImoveis.value.porTipo.forEach((item) => (item.quantidade = 0));
+
+    data.value.forEach((imovel) => {
+      const tipo = (imovel.tipo_imovel || "").trim().toLowerCase();
+      const tipoObj = dadosImoveis.value.porTipo.find(
+        (t) => t.tipo.toLowerCase() === tipo
+      );
+      if (tipoObj) {
+        tipoObj.quantidade++;
+      }
+    });
   }
 
   if (data.value) {
@@ -170,8 +183,6 @@ onMounted(async () => {
               <p class="info-card-p">R${{ valueAverage.toFixed(2) }}</p>
             </div>
           </div>
-        </div>
-        <div class="container-cards">
           <div class="card">
             <div class="conteiner-icon-type">
               <font-awesome-icon
@@ -220,6 +231,7 @@ onMounted(async () => {
   flex-direction: column;
   align-items: center;
   width: 100%;
+  height: 100%;
   padding: 16px;
   gap: 30px;
 }
@@ -245,9 +257,10 @@ onMounted(async () => {
 .row-graphic {
   display: flex;
   justify-content: center;
-  align-items: start;
+  align-items: center;
   flex-direction: row;
   width: 100%;
+  height: 100%;
 }
 
 .input-filter {
@@ -275,18 +288,18 @@ onMounted(async () => {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: auto;
-  gap: 30px;
+  height: 100%;
   padding: 10px;
 }
 
 .container-cards {
   display: flex;
-  justify-content: start;
+  justify-content: space-between;
   align-items: center;
   flex-direction: column;
   width: 100%;
-  gap: 30px;
+  height: 80%;
+  max-height: 650px;
 }
 
 .card {
@@ -397,12 +410,13 @@ onMounted(async () => {
 }
 
 .charts-grid {
-  display: grid;
+  display: flex;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: 20px;
   width: 760px;
-  height: auto;
+  height: 80%;
   padding: 10px;
+  max-height: 650px;
 }
 
 .chart-container {
@@ -410,5 +424,7 @@ onMounted(async () => {
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   padding: 20px;
+  width: 100%;
+  max-height: 650px;
 }
 </style>
