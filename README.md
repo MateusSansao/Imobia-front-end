@@ -15,20 +15,16 @@ A proposta é facilitar a gestão e visualização dos dados imobiliários de fo
 
 ## Node 18
 
-## Getting Started
+## Iniciar
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Executar:
 
 ```bash
 npm install
 ```
+
+```bash
+npm run dev
+```
+
+
