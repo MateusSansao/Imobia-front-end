@@ -8,3 +8,8 @@ Dashboard interativo com visualização de métricas e informações relevantes 
 Tela de listagem com filtros dinâmicos, permitindo buscar e filtrar imóveis de forma eficiente com base em critérios específicos (como localização, tipo, etc).
 
 A proposta é facilitar a gestão e visualização dos dados imobiliários de forma prática, moderna e responsiva.</p>
+
+##Instruções
+```bash
+npm install
+```
